@@ -41,7 +41,9 @@ public class KylinWebServiceImpl implements KylinWebService {
         KylinClient client = httpClientFactory.getKylinClient(kylin);
         try {
             String key = client.connect();
-            kylinService.insert(kylin);
+            if (null == kylinService.selectById(Integer.parseInt(key))) {
+                kylinService.insert(kylin);
+            }
             return ServerResponse.createBySuccess(key);
         } catch (Exception e) {
             log.error(e.getMessage() + ", {}", e.getCause());

@@ -7,9 +7,11 @@ import lombok.Data;
 @Data
 @TableName("tb_kylin_job")
 public class KylinJob {
-    private Integer kylinId;
     @TableId
     private String uuid;
+    private Integer kylinId;
     private boolean isResume;
     private Integer resumeTimes;
+    private String status;
+    private String taskName;
 }

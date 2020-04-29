@@ -1,21 +1,26 @@
 package com.delta.kylintask.dto;
 
-import com.delta.kylintask.entity.Cube;
 import lombok.Data;
 
-import java.sql.Timestamp;
+import java.util.Date;
 
 @Data
 public class TaskDto {
-    private String cubeName;
-    private String segment;
-    private String buildType;
+    //即时是groupid
+    private String kylinid;
+    private TargetDataDto targetDataDto;
     private String cron;
     private boolean isResume;
     private Integer resumeTimes;
     private boolean isLimit;
-    private Timestamp startAt;
-    private Timestamp endAt;
-    private String status;
+    private Date startAt;
+    private Date endAt;
     private String description;
+
+    //给前端使用
+    private Date nextFireTime;
+    private String status;
+    private String taskName;
 }
+
+
