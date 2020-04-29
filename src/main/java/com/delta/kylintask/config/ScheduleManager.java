@@ -13,6 +13,10 @@ public class ScheduleManager {
     @Autowired
     private Scheduler scheduler;
 
+    public void getJobs() {
+
+    }
+
     public void addJob(String jobName, String jobGroupName, JobDataMap jobDataMap,
                               String triggerName, String triggerGroupName, Class jobClass, String cron) {
         try {
