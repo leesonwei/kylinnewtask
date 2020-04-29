@@ -14,6 +14,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 import java.util.Date;
 
 @RestControllerAdvice
@@ -39,5 +40,6 @@ public class ExceptionController {
     private void logError(RuntimeException ex, WebRequest request) {
         HttpServletRequest servletRequest = ((ServletWebRequest) request).getRequest();
         log.error("Method:{} | Path:{} | Message:{}", servletRequest.getMethod(), servletRequest.getServletPath(), ex.getMessage());
+        log.debug(Arrays.toString(ex.getStackTrace()));
     }
 }
