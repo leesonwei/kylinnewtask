@@ -1,0 +1,6 @@
+#FileLock
+#Wed Apr 29 15:21:25 CST 2020
+server=192.168.172.1\:56493
+hostName=cndg2itnb013.delta.corp
+method=file
+id=171c4cfce144bbe63aeff963ec431c23df373f2b696
