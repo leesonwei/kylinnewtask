@@ -6,9 +6,9 @@ import java.util.Date;
 
 @Data
 public class TaskDto {
-    //即时是groupid
+    //即是groupid
     private String kylinid;
-    private TargetDataDto targetDataDto;
+    private String targetData;
     private String cron;
     private boolean isResume;
     private Integer resumeTimes;

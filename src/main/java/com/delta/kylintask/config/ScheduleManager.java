@@ -1,13 +1,13 @@
 package com.delta.kylintask.config;
 
 import com.alibaba.fastjson.JSON;
+import com.delta.kylintask.commons.Constants;
 import com.delta.kylintask.commons.ServerResponse;
 import com.delta.kylintask.dto.TargetDataDto;
 import com.delta.kylintask.dto.TaskDto;
-import com.delta.kylintask.quartz.BuildJob;
-import com.delta.kylintask.quartz.BuildJobListener;
-import com.delta.kylintask.quartz.MonitorJob;
-import com.delta.kylintask.quartz.MonitorJobListener;
+import com.delta.kylintask.entity.Cube;
+import com.delta.kylintask.entity.Segment;
+import com.delta.kylintask.quartz.*;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
 import org.quartz.impl.matchers.GroupMatcher;
@@ -16,10 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.beans.BeanMap;
 import org.springframework.stereotype.Component;
 
+import java.lang.reflect.Method;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Component
 @Slf4j
@@ -54,45 +53,59 @@ public class ScheduleManager {
         }
         return taskDtos;
     }
-    private Class getClass(String buildType){
-        switch (buildType) {
-            case "BUILD" :
-            case "REFRESH" : {
-                return BuildJob.class;
-            }
-            case "MONITOR" : {
-                return MonitorJob.class;
-            }
-            default : {
-                throw new RuntimeException("built type so not match.");
-            }
-        }
+
+    private String getCubeJobName(TargetDataDto targetDataDto){
+        System.out.println(targetDataDto.getSegment());
+        Cube cube = JSON.parseObject(targetDataDto.getCube(), Cube.class);
+        Segment segment = JSON.parseObject(targetDataDto.getSegment(), Segment.class);
+        return String.format("%s_%s_%s", targetDataDto.getAction(), cube.getName(), segment.getName());
     }
-    private JobListenerSupport getListener(String buildType) {
+
+    private String getMonitorJobName(TargetDataDto targetDataDto){
+        return String.format("%s_%s", targetDataDto.getAction(), targetDataDto.getJobUuid());
+    }
+
+    private Map<String, Object> getJobInfo(String buildType){
+        Map<String, Object> jobInfo =new HashMap<>();
         switch (buildType) {
-            case "BUILD" :
-            case "REFRESH" : {
-                return new BuildJobListener();
+            case Constants.REFRESH :
+            case Constants.BUILD : {
+                jobInfo.put("listener", new BuildJobListener());
+                jobInfo.put("clazz", BuildJob.class);
+                jobInfo.put("jobName", "getCubeJobName");
+                return jobInfo;
             }
-            case "MONITOR" : {
-                return new MonitorJobListener();
+            case Constants.MONITOR : {
+                jobInfo.put("listener", new MonitorJobListener());
+                jobInfo.put("clazz", MonitorJob.class);
+                jobInfo.put("jobName", "getMonitorJobName");
+                return jobInfo;
+            }
+            case Constants.RESUME : {
+                jobInfo.put("listener", new ResumeJobListener());
+                jobInfo.put("clazz", ResumeJob.class);
+                jobInfo.put("jobName", "getMonitorJobName");
+                return jobInfo;
             }
             default : {
-                throw new RuntimeException("built type so not match.");
+                throw new RuntimeException("built type do not match.");
             }
         }
     }
 
     public TaskDto addJob(TaskDto taskDto) {
         try {
-            TargetDataDto targetDataDto = taskDto.getTargetDataDto();
-            JobDetail jobDetail = JobBuilder.newJob(getClass(targetDataDto.getBuildType()))
+            TargetDataDto targetDataDto = JSON.parseObject(taskDto.getTargetData(), TargetDataDto.class);
+            Map<String, Object> jobInfo = getJobInfo(targetDataDto.getAction());
+            Method method = this.getClass().getDeclaredMethod((String) jobInfo.get("jobName"), TargetDataDto.class);
+            method.setAccessible(true);
+            String jobName = (String) method.invoke(this, targetDataDto);
+            JobDetail jobDetail = JobBuilder.newJob((Class<? extends Job>) jobInfo.get("clazz"))
                     .usingJobData(new JobDataMap(BeanMap.create(taskDto)))
-                    .usingJobData(new JobDataMap(BeanMap.create(targetDataDto)))
                     .withDescription(taskDto.getDescription())
-                    .withIdentity(targetDataDto.getCubeJobName(), taskDto.getKylinid()).build();
+                    .withIdentity(jobName, taskDto.getKylinid()).build();
             TriggerBuilder<Trigger> triggerBuilder = TriggerBuilder.newTrigger();
-            triggerBuilder.withIdentity(targetDataDto.getCubeJobName(), taskDto.getKylinid());
+            triggerBuilder.withIdentity(jobName, taskDto.getKylinid());
             if (taskDto.isLimit()) {
                 triggerBuilder.startAt(taskDto.getStartAt()).endAt(taskDto.getEndAt());
             } else {
@@ -105,12 +118,12 @@ public class ScheduleManager {
             if (!scheduler.isShutdown()) {
                 scheduler.start();
             }
-            taskDto.setTaskName(targetDataDto.getCubeJobName());
+            taskDto.setTaskName(jobName);
             taskDto.setNextFireTime(new Timestamp(trigger.getNextFireTime().getTime()));
             Trigger.TriggerState triggerState = scheduler.getTriggerState(trigger.getKey());
             taskDto.setStatus(triggerState.name());
-            scheduler.getListenerManager().addJobListener(
-                    getListener(targetDataDto.getBuildType()), GroupMatcher.jobGroupEquals(taskDto.getKylinid()));
+            JobListener listener = (JobListener)jobInfo.get("listener");
+            scheduler.getListenerManager().addJobListener(listener, GroupMatcher.jobGroupEquals(taskDto.getKylinid()));
             log.info("add job {}.", JSON.toJSONString(taskDto));
             return taskDto;
         } catch (Exception e) {
@@ -145,12 +158,36 @@ public class ScheduleManager {
         }
     }
 
-    public void pauseJob(){
-
+    public TaskDto pauseJob(TaskDto taskDto){
+        try {
+            JobKey jobKey = JobKey.jobKey(taskDto.getTaskName(), taskDto.getKylinid());
+            JobDetail jobDetail = scheduler.getJobDetail(jobKey);
+            if (jobDetail == null) {
+                return null;
+            }
+            scheduler.pauseJob(jobKey);
+            Trigger trigger = scheduler.getTriggersOfJob(jobKey).get(0);
+            taskDto.setStatus(scheduler.getTriggerState(trigger.getKey()).name());
+            return taskDto;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void resumeJob(){
-
+    public TaskDto resumeJob(TaskDto taskDto){
+        try {
+            JobKey jobKey = JobKey.jobKey(taskDto.getTaskName(), taskDto.getKylinid());
+            JobDetail jobDetail = scheduler.getJobDetail(jobKey);
+            if (jobDetail == null) {
+                return null;
+            }
+            scheduler.resumeJob(jobKey);
+            Trigger trigger = scheduler.getTriggersOfJob(jobKey).get(0);
+            taskDto.setStatus(scheduler.getTriggerState(trigger.getKey()).name());
+            return taskDto;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void modifyJobDetail(String jobName,String jobGroupName, JobDataMap jobDataMap,
@@ -175,14 +212,28 @@ public class ScheduleManager {
         }
     }
 
-    public void removeJob(TaskDto taskDto) {
+    public TaskDto removeJob(TaskDto taskDto) {
         try {
             TriggerKey triggerKey = TriggerKey.triggerKey(taskDto.getTaskName(), taskDto.getKylinid());
             scheduler.pauseTrigger(triggerKey);
             scheduler.unscheduleJob(triggerKey);
             scheduler.deleteJob(JobKey.jobKey(taskDto.getTaskName(), taskDto.getKylinid()));
+            return taskDto;
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public boolean removeJob(JobDetail jobDetail) {
+        try {
+            TriggerKey triggerKey = TriggerKey.triggerKey(jobDetail.getKey().getName(), jobDetail.getKey().getGroup());
+            scheduler.pauseTrigger(triggerKey);
+            scheduler.unscheduleJob(triggerKey);
+            scheduler.deleteJob(jobDetail.getKey());
+            return true;
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return false;
         }
     }
 

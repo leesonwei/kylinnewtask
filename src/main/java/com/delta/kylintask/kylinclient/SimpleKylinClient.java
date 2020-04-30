@@ -2,7 +2,7 @@ package com.delta.kylintask.kylinclient;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.delta.kylintask.commons.Http;
+import com.delta.kylintask.dto.BuildCubeDto;
 import com.delta.kylintask.entity.Cube;
 import com.delta.kylintask.entity.Kylin;
 import com.delta.kylintask.entity.KylinJob;
@@ -11,10 +11,11 @@ import com.delta.kylintask.exception.KylinException;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
+import org.quartz.JobExecutionException;
+import org.springframework.http.HttpMethod;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
@@ -41,7 +42,7 @@ public class SimpleKylinClient implements KylinClient {
     public String connect() throws Exception {
         String url = getUrl(auth);
         RequestBody requestBody = getRequestBody(kylin);
-        String requestSync = doRequestSync(url, requestBody, Http.POST);
+        String requestSync = doRequestSync(url, requestBody, HttpMethod.POST);
         if (requestSync.contains("userDetails")) {
             return String.valueOf(kylin.hashCode());
         } else {
@@ -50,26 +51,26 @@ public class SimpleKylinClient implements KylinClient {
     }
 
     @Override
-    public List<Project> getProjects() {
+    public List<Project> getProjects() throws Exception {
         String url = getUrl(projects);
-        String project = doRequestSync(url, null, Http.GET);
+        String project = doRequestSync(url, null, HttpMethod.GET);
         List<Project> projects = JSONObject.parseArray(project, Project.class);
         return projects;
     }
 
     @Override
-    public List<Cube> getCubes(String projectName) {
+    public List<Cube> getCubes(String projectName) throws Exception {
         String url = getUrl(String.format("%s?projectName=%s&offset=%d&limit=%d", cubes,
                 projectName, 0, 200));
-        String requestSync =  doRequestSync(url, null, Http.GET);
+        String requestSync =  doRequestSync(url, null, HttpMethod.GET);
         List<Cube> cubes = JSON.parseArray(requestSync, Cube.class);
         return cubes;
     }
 
     @Override
-    public Cube getCube(Cube cube) {
+    public Cube getCube(Cube cube) throws Exception {
         String url = getUrl(String.format("%s/%s", cubes,cube.getName()));
-        String requestSync =  doRequestSync(url, null, Http.GET);
+        String requestSync =  doRequestSync(url, null, HttpMethod.GET);
         Optional<Cube> first;
         try {
             List<Cube> cubes = JSON.parseArray(requestSync, Cube.class);
@@ -82,43 +83,74 @@ public class SimpleKylinClient implements KylinClient {
     }
 
     @Override
-    public String buildCube() throws Exception {
-        return null;
+    public String buildCube(BuildCubeDto buildCubeDto) throws JobExecutionException {
+        //todo kylin時間轉換
+        String url = getUrl(getSubUrl(buildCubeDto).replace("{cube_name}", buildCubeDto.getCubeName()));
+        RequestBody requestBody = getRequestBody(buildCubeDto);
+        String requestSync =  doRequestSync(url, requestBody, HttpMethod.PUT);
+        return requestSync;
+    }
+
+    private String getSubUrl(BuildCubeDto buildCubeDto) {
+        String subUrl = rebuild;
+        if ("REFRESH".equals(buildCubeDto.getBuildType()) || ("BUILD".equals(buildCubeDto.getBuildType()) && buildCubeDto.isFullBuild())) {
+            subUrl = rebuild;
+        }
+        if ("BUILD".equals(buildCubeDto.getBuildType()) && !buildCubeDto.isFullBuild()) {
+            subUrl = build;
+        }
+        if ("REFRESH".equals(buildCubeDto.getBuildType()) && buildCubeDto.isStreaming()) {
+            subUrl = streamingrebuild;
+        }
+        if ("REFRESH".equals(buildCubeDto.getBuildType()) && !buildCubeDto.isStreaming()) {
+            subUrl = streamingbuild;
+        }
+        return subUrl;
     }
 
     @Override
-    public void resumeJob(KylinJob job, Callback callback) throws Exception {
-
-    }
-
-
-    @Override
-    public KylinJob getJob(KylinJob job, Callback callback) {
-        String url = getUrl(String.format("%s/%s", jobs, job.getUuid()));
-        String requestSync =  doRequestSync(url, null, Http.GET);
+    public KylinJob resumeJob(KylinJob job) throws JobExecutionException {
+        String url = getUrl(String.format("%s/%s", resume, job.getUuid()));
+        String requestSync =  doRequestSync(url, null, HttpMethod.PUT);
         return JSON.parseObject(requestSync, KylinJob.class);
     }
 
+
+    @Override
+    public KylinJob getJob(String jobUuid) throws JobExecutionException {
+        String url = getUrl(String.format("%s/%s", jobs, jobUuid));
+        String requestSync =  doRequestSync(url, null, HttpMethod.GET);
+        return JSON.parseObject(requestSync, KylinJob.class);
+    }
+
+    @Override
+    public List<KylinJob> getJobs(String cubeName) throws JobExecutionException {
+        String getParams = "cubeName={cube_name}&limit=144&offset=0&timeFilter=1".replace("{cube_name}", cubeName);
+        String url = getUrl(String.format("%s?%s", jobs, getParams));
+        String requestSync =  doRequestSync(url, null, HttpMethod.GET);
+        return JSON.parseArray(requestSync, KylinJob.class);
+    }
+
     private String getUrl(String detail){
-        String url = String.format("%s://%s:%d/%s/%s",kylin.getProtocol(),
+        String url = String.format("%s://%s:%d/%s/%s", kylin.getProtocol(),
                 kylin.getHost(), kylin.getPort(), baseurl, detail);
         return url;
     }
 
-    private void doRequestAync(String url, RequestBody requestBody, Http restType, Callback callback){
-        Request request = getRequest(url, requestBody, restType);
+    private void doRequestAync(String url, RequestBody requestBody, HttpMethod method, Callback callback){
+        Request request = getRequest(url, requestBody, method);
         okHttpClient.newCall(request).enqueue(callback);
     }
 
-    private Request getRequest(String url, RequestBody requestBody, Http restType){
+    private Request getRequest(String url, RequestBody requestBody, HttpMethod method){
         Request.Builder builder = new Request.Builder().url(url)
                 .headers(initHeader(kylin));
         Request request = null;
-        if (restType.equals(Http.PUT)) {
+        if (method.equals(HttpMethod.PUT)) {
             request = builder.put(requestBody).build();
-        } else if (restType.equals(Http.POST)) {
+        } else if (method.equals(HttpMethod.POST)) {
             request = builder.post(requestBody).build();
-        } else if (restType.equals(Http.DELETE)) {
+        } else if (method.equals(HttpMethod.DELETE)) {
             request = builder.delete(requestBody).build();
         } else {
             request = builder.build();
@@ -131,8 +163,8 @@ public class SimpleKylinClient implements KylinClient {
         return requestBody;
     }
 
-    private String doRequestSync(String url, RequestBody requestBody, Http restType){
-        Request request = getRequest(url, requestBody, restType);
+    private String doRequestSync(String url, RequestBody requestBody, HttpMethod method) {
+        Request request = getRequest(url, requestBody, method);
         Response response = null;
         String responseString = null;
         try {
@@ -149,8 +181,8 @@ public class SimpleKylinClient implements KylinClient {
         return null;
     }
 
-    private List<Object> doRequestSync(String url, RequestBody requestBody, Http restType, Class result){
-        Request request = getRequest(url, requestBody, restType);
+    private List<Object> doRequestSync(String url, RequestBody requestBody, HttpMethod method, Class result){
+        Request request = getRequest(url, requestBody, method);
         Response response = null;
         String responsBody = null;
         try {

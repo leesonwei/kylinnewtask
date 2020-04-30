@@ -21,6 +21,7 @@ public class KylinWebController {
 
     @PostMapping("/connect")
     public ServerResponse<String> connect(Kylin kylin){
+        kylin.setId(kylin.hashCode());
         return kylinWebService.connect(kylin);
     }
 

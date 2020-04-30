@@ -10,6 +10,7 @@ import com.delta.kylintask.kylinclient.KylinClient;
 import com.delta.kylintask.service.KylinService;
 import com.delta.kylintask.service.KylinWebService;
 import lombok.extern.slf4j.Slf4j;
+import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -54,19 +55,31 @@ public class KylinWebServiceImpl implements KylinWebService {
     @Override
     public ServerResponse<List<Cube>> getCubes(String clientKey, String projectName) {
         KylinClient client = httpClientFactory.getKylinClient(clientKey);
-        return ServerResponse.createBySuccess(client.getCubes(projectName));
+        try {
+            return ServerResponse.createBySuccess(client.getCubes(projectName));
+        } catch (Exception e) {
+            return ServerResponse.createByErrorMessage(e.getMessage());
+        }
     }
 
     @Override
     public ServerResponse<Cube> getCube(String clientKey, Cube cube) {
         KylinClient client = httpClientFactory.getKylinClient(clientKey);
-        return ServerResponse.createBySuccess(client.getCube(cube));
+        try {
+            return ServerResponse.createBySuccess(client.getCube(cube));
+        } catch (Exception e) {
+            return ServerResponse.createByErrorMessage(e.getMessage());
+        }
     }
 
     @Override
     public ServerResponse<KylinJob> getJob(String clientKey, KylinJob kylinJob) {
         KylinClient client = httpClientFactory.getKylinClient(clientKey);
-        return ServerResponse.createBySuccess(client.getJob(kylinJob, null));
+        try {
+            return ServerResponse.createBySuccess(client.getJob(kylinJob.getUuid()));
+        } catch (Exception e) {
+            return ServerResponse.createByErrorMessage(e.getMessage());
+        }
     }
 
     @Override

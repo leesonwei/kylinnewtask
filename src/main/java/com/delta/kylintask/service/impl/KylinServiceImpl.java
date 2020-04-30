@@ -1,6 +1,7 @@
 package com.delta.kylintask.service.impl;
 
 import com.delta.kylintask.commons.ServerResponse;
+import com.delta.kylintask.config.KylinProperties;
 import com.delta.kylintask.mapper.KylinMapper;
 import com.delta.kylintask.entity.Kylin;
 import com.delta.kylintask.service.KylinService;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 public class KylinServiceImpl implements KylinService {
     @Autowired
     private KylinMapper kylinMapper;
+
     @Override
     public ServerResponse<Kylin> insert(Kylin kylin) {
         kylin.setId(kylin.hashCode());

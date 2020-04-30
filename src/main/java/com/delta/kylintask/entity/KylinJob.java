@@ -9,9 +9,10 @@ import lombok.Data;
 public class KylinJob {
     @TableId
     private String uuid;
-    private Integer kylinId;
+    private String kylinId;
+    private String name;
     private boolean isResume;
     private Integer resumeTimes;
-    private String status;
+    private String jobStatus;
     private String taskName;
 }
