@@ -21,6 +21,7 @@ public class TaskDto {
     private Date nextFireTime;
     private String status;
     private String taskName;
+    private String groupName;
 }
 
 

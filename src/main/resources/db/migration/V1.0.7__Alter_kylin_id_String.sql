@@ -1,0 +1,1 @@
+ALTER TABLE tb_kylin ALTER COLUMN id varchar(16);

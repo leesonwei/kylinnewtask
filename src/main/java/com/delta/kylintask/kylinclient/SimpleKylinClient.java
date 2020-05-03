@@ -2,6 +2,7 @@ package com.delta.kylintask.kylinclient;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.delta.kylintask.commons.ServerResponse;
 import com.delta.kylintask.dto.BuildCubeDto;
 import com.delta.kylintask.entity.Cube;
 import com.delta.kylintask.entity.Kylin;
@@ -13,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.quartz.JobExecutionException;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -39,56 +41,67 @@ public class SimpleKylinClient implements KylinClient {
     private OkHttpClient okHttpClient;
 
     @Override
-    public String connect() throws Exception {
+    public String connect() {
         String url = getUrl(auth);
         RequestBody requestBody = getRequestBody(kylin);
-        String requestSync = doRequestSync(url, requestBody, HttpMethod.POST);
-        if (requestSync.contains("userDetails")) {
-            return String.valueOf(kylin.hashCode());
-        } else {
-            throw new KylinException("can't connect to kylin server");
+        ServerResponse<String> stringServerResponse = doRequestSync(url, requestBody, HttpMethod.POST);
+        assert stringServerResponse != null;
+        if (!stringServerResponse.isSuccess()) {
+            throw new KylinException(String.format("connect to kylin server error. status:{}", stringServerResponse.getStatus()));
         }
+        return stringServerResponse.getData();
     }
 
     @Override
-    public List<Project> getProjects() throws Exception {
+    public List<Project> getProjects() {
         String url = getUrl(projects);
-        String project = doRequestSync(url, null, HttpMethod.GET);
-        List<Project> projects = JSONObject.parseArray(project, Project.class);
+        ServerResponse<String> stringServerResponse = doRequestSync(url, null, HttpMethod.GET);
+        assert stringServerResponse != null;
+        if (!stringServerResponse.isSuccess()) {
+            throw new KylinException(String.format("get Project error. status:{}", stringServerResponse.getStatus()));
+        }
+        List<Project> projects = JSONObject.parseArray(stringServerResponse.getData(), Project.class);
         return projects;
     }
 
     @Override
-    public List<Cube> getCubes(String projectName) throws Exception {
+    public List<Cube> getCubes(String projectName)  {
         String url = getUrl(String.format("%s?projectName=%s&offset=%d&limit=%d", cubes,
                 projectName, 0, 200));
-        String requestSync =  doRequestSync(url, null, HttpMethod.GET);
-        List<Cube> cubes = JSON.parseArray(requestSync, Cube.class);
+        ServerResponse<String> stringServerResponse =  doRequestSync(url, null, HttpMethod.GET);
+        assert stringServerResponse != null;
+        if (!stringServerResponse.isSuccess()) {
+            throw new KylinException(String.format("get cubes error. status:{}", stringServerResponse.getStatus()));
+        }
+        List<Cube> cubes = JSON.parseArray(stringServerResponse.getData(), Cube.class);
         return cubes;
     }
 
     @Override
-    public Cube getCube(Cube cube) throws Exception {
+    public Cube getCube(Cube cube) {
         String url = getUrl(String.format("%s/%s", cubes,cube.getName()));
-        String requestSync =  doRequestSync(url, null, HttpMethod.GET);
+        ServerResponse<String> stringServerResponse = doRequestSync(url, null, HttpMethod.GET);
+        assert stringServerResponse != null;
+        if (!stringServerResponse.isSuccess()) {
+            throw new KylinException(String.format("get cube error. status:{}", stringServerResponse.getStatus()));
+        }
         Optional<Cube> first;
         try {
-            List<Cube> cubes = JSON.parseArray(requestSync, Cube.class);
+            List<Cube> cubes = JSON.parseArray(stringServerResponse.getData(), Cube.class);
             first = cubes.parallelStream().filter(m -> m.getName().equals(cube.getName())).findFirst();
         } catch (Exception e) {
-            Cube resultCube = JSON.parseObject(requestSync, Cube.class);
+            Cube resultCube = JSON.parseObject(stringServerResponse.getData(), Cube.class);
             first = Optional.of(resultCube);
         }
         return first.get();
     }
 
     @Override
-    public String buildCube(BuildCubeDto buildCubeDto) throws JobExecutionException {
-        //todo kylin時間轉換
+    public String buildCube(BuildCubeDto buildCubeDto) {
         String url = getUrl(getSubUrl(buildCubeDto).replace("{cube_name}", buildCubeDto.getCubeName()));
         RequestBody requestBody = getRequestBody(buildCubeDto);
-        String requestSync =  doRequestSync(url, requestBody, HttpMethod.PUT);
-        return requestSync;
+        ServerResponse<String> stringServerResponse = doRequestSync(url, requestBody, HttpMethod.PUT);
+        return stringServerResponse.getData();
     }
 
     private String getSubUrl(BuildCubeDto buildCubeDto) {
@@ -109,26 +122,38 @@ public class SimpleKylinClient implements KylinClient {
     }
 
     @Override
-    public KylinJob resumeJob(KylinJob job) throws JobExecutionException {
+    public KylinJob resumeJob(KylinJob job) {
         String url = getUrl(String.format("%s/%s", resume, job.getUuid()));
-        String requestSync =  doRequestSync(url, null, HttpMethod.PUT);
-        return JSON.parseObject(requestSync, KylinJob.class);
+        ServerResponse<String> stringServerResponse = doRequestSync(url, null, HttpMethod.PUT);
+        assert stringServerResponse != null;
+        if (!stringServerResponse.isSuccess()) {
+            return null;
+        }
+        return JSON.parseObject(stringServerResponse.getData(), KylinJob.class);
     }
 
 
     @Override
-    public KylinJob getJob(String jobUuid) throws JobExecutionException {
+    public KylinJob getJob(String jobUuid) {
         String url = getUrl(String.format("%s/%s", jobs, jobUuid));
-        String requestSync =  doRequestSync(url, null, HttpMethod.GET);
-        return JSON.parseObject(requestSync, KylinJob.class);
+        ServerResponse<String> stringServerResponse = doRequestSync(url, null, HttpMethod.GET);
+        assert stringServerResponse != null;
+        if (!stringServerResponse.isSuccess()) {
+            return null;
+        }
+        return JSON.parseObject(stringServerResponse.getData(), KylinJob.class);
     }
 
     @Override
-    public List<KylinJob> getJobs(String cubeName) throws JobExecutionException {
+    public List<KylinJob> getJobs(String cubeName) {
         String getParams = "cubeName={cube_name}&limit=144&offset=0&timeFilter=1".replace("{cube_name}", cubeName);
         String url = getUrl(String.format("%s?%s", jobs, getParams));
-        String requestSync =  doRequestSync(url, null, HttpMethod.GET);
-        return JSON.parseArray(requestSync, KylinJob.class);
+        ServerResponse<String> stringServerResponse = doRequestSync(url, null, HttpMethod.GET);
+        assert stringServerResponse != null;
+        if (!stringServerResponse.isSuccess()) {
+            return null;
+        }
+        return JSON.parseArray(stringServerResponse.getData(), KylinJob.class);
     }
 
     private String getUrl(String detail){
@@ -163,7 +188,7 @@ public class SimpleKylinClient implements KylinClient {
         return requestBody;
     }
 
-    private String doRequestSync(String url, RequestBody requestBody, HttpMethod method) {
+    private ServerResponse<String> doRequestSync(String url, RequestBody requestBody, HttpMethod method) {
         Request request = getRequest(url, requestBody, method);
         Response response = null;
         String responseString = null;
@@ -171,8 +196,12 @@ public class SimpleKylinClient implements KylinClient {
             Call call = okHttpClient.newCall(request);
             response = call.execute();
             responseString = response.body().string();
-            log.debug(responseString);
-            return responseString;
+            if (!response.isSuccessful()) {
+                log.info("Kylin request failed. status:{}, result:{}", response.code(), responseString);
+                return ServerResponse.createByErrorCodeMessage(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                        String.format("Kylin request failed. status:{}", response.code()));
+            }
+            ServerResponse.createBySuccess(responseString);
         } catch (IOException e) {
             log.error(e.getMessage());
         } finally {

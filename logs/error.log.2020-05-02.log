@@ -1,0 +1,7 @@
+2020-05-02 08:50:13.553 [http-nio-8060-exec-2] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - Expected URL scheme 'http' or 'https' but was 'null', {}
+2020-05-02 21:28:55.963 [http-nio-8060-exec-3] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - Expected URL scheme 'http' or 'https' but was 'null', {}
+2020-05-02 21:29:57.081 [http-nio-8060-exec-7] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - Expected URL scheme 'http' or 'https' but was 'null', {}
+2020-05-02 21:30:00.355 [http-nio-8060-exec-6] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - Expected URL scheme 'http' or 'https' but was 'null', {}
+2020-05-02 21:30:25.929 [http-nio-8060-exec-9] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - Expected URL scheme 'http' or 'https' but was 'null', {}
+2020-05-02 21:46:41.254 [http-nio-8060-exec-2] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - Expected URL scheme 'http' or 'https' but was 'null', {}
+2020-05-02 21:47:34.382 [http-nio-8060-exec-1] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - Expected URL scheme 'http' or 'https' but was 'null', {}

@@ -11,7 +11,7 @@ import lombok.EqualsAndHashCode;
 @TableName("tb_kylin")
 public class Kylin {
     @TableId
-    private Integer id;
+    private String id;
     private String protocol;
     private String host;
     private Integer port;

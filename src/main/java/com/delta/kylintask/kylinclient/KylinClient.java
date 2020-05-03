@@ -10,12 +10,12 @@ import org.quartz.JobExecutionException;
 import java.util.List;
 
 public interface KylinClient {
-    String connect() throws Exception;
-    List<Project> getProjects() throws Exception;
-    List<Cube> getCubes(String projectName) throws Exception;
-    Cube getCube(Cube cube) throws Exception;
-    String buildCube(BuildCubeDto buildCubeDto) throws JobExecutionException;
-    KylinJob resumeJob(KylinJob job) throws JobExecutionException;
-    KylinJob getJob(String jobUuid) throws JobExecutionException;
-    List<KylinJob> getJobs(String cubeName) throws JobExecutionException;
+    String connect();
+    List<Project> getProjects();
+    List<Cube> getCubes(String projectName);
+    Cube getCube(Cube cube);
+    String buildCube(BuildCubeDto buildCubeDto);
+    KylinJob resumeJob(KylinJob job);
+    KylinJob getJob(String jobUuid);
+    List<KylinJob> getJobs(String cubeName);
 }

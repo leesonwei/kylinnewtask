@@ -42,7 +42,7 @@ public class KylinWebServiceImpl implements KylinWebService {
         KylinClient client = httpClientFactory.getKylinClient(kylin);
         try {
             String key = client.connect();
-            if (null == kylinService.selectById(Integer.parseInt(key))) {
+            if (null == kylinService.selectById(key)) {
                 kylinService.insert(kylin);
             }
             return ServerResponse.createBySuccess(key);

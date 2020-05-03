@@ -1,0 +1,71 @@
+2020-05-02 08:47:09.794 [main] INFO  org.springframework.core.KotlinDetector - Kotlin reflection implementation not found at runtime, related features won't be available.
+2020-05-02 08:47:11.089 [main] INFO  com.delta.kylintask.KylinTaskApplication - Starting KylinTaskApplication on ANYWHERE with PID 27960 (C:\Users\anywhere\IdeaProjects\kylinnewtask\target\classes started by anywhere in C:\Users\anywhere\IdeaProjects\kylinnewtask)
+2020-05-02 08:47:11.093 [main] INFO  com.delta.kylintask.KylinTaskApplication - No active profile set, falling back to default profiles: default
+2020-05-02 08:47:11.710 [background-preinit] WARN  o.s.h.converter.json.Jackson2ObjectMapperBuilder - For Jackson Kotlin classes support please add "com.fasterxml.jackson.module:jackson-module-kotlin" to the classpath
+2020-05-02 08:47:13.554 [main] WARN  org.mybatis.spring.mapper.ClassPathMapperScanner - No MyBatis mapper was found in '[com.delta.kylintask]' package. Please check your configuration.
+2020-05-02 08:47:13.599 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data LDAP repositories in DEFAULT mode.
+2020-05-02 08:47:13.629 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 19ms. Found 0 LDAP repository interfaces.
+2020-05-02 08:47:14.501 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat initialized with port(s): 8060 (http)
+2020-05-02 08:47:14.520 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8060"]
+2020-05-02 08:47:14.523 [main] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2020-05-02 08:47:14.524 [main] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.33]
+2020-05-02 08:47:14.838 [main] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2020-05-02 08:47:14.842 [main] INFO  org.springframework.web.context.ContextLoader - Root WebApplicationContext: initialization completed in 3470 ms
+2020-05-02 08:47:14.999 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2020-05-02 08:47:15.067 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2020-05-02 08:47:15.078 [main] INFO  o.s.b.autoconfigure.h2.H2ConsoleAutoConfiguration - H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./db/KylinTask'
+2020-05-02 08:47:15.656 [main] INFO  org.flywaydb.core.internal.license.VersionPrinter - Flyway Community Edition 6.0.8 by Redgate
+2020-05-02 08:47:15.677 [main] INFO  o.flywaydb.core.internal.database.DatabaseFactory - Database: jdbc:h2:file:./db/KylinTask (H2 1.4)
+2020-05-02 08:47:15.703 [main] WARN  org.flywaydb.core.internal.database.base.Database - Flyway upgrade recommended: H2 1.4.200 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 1.4.199.
+2020-05-02 08:47:15.762 [main] INFO  org.flywaydb.core.internal.command.DbValidate - Successfully validated 8 migrations (execution time 00:00.046s)
+2020-05-02 08:47:15.777 [main] INFO  org.flywaydb.core.internal.command.DbMigrate - Current version of schema "PUBLIC": 1.0.7
+2020-05-02 08:47:15.780 [main] INFO  org.flywaydb.core.internal.command.DbMigrate - Schema "PUBLIC" is up to date. No migration necessary.
+2020-05-02 08:47:15.854 [main] INFO  org.quartz.impl.StdSchedulerFactory - Using default implementation for ThreadExecutor
+2020-05-02 08:47:15.881 [main] INFO  org.quartz.core.SchedulerSignalerImpl - Initialized Scheduler Signaller of type: class org.quartz.core.SchedulerSignalerImpl
+2020-05-02 08:47:15.884 [main] INFO  org.quartz.core.QuartzScheduler - Quartz Scheduler v.2.3.2 created.
+2020-05-02 08:47:15.892 [main] INFO  o.s.scheduling.quartz.LocalDataSourceJobStore - Using db table-based data access locking (synchronization).
+2020-05-02 08:47:15.902 [main] INFO  o.s.scheduling.quartz.LocalDataSourceJobStore - JobStoreCMT initialized.
+2020-05-02 08:47:15.925 [main] INFO  org.quartz.core.QuartzScheduler - Scheduler meta-data: Quartz Scheduler (v2.3.2) 'scheduler' with instanceId 'NON_CLUSTERED'
+  Scheduler class: 'org.quartz.core.QuartzScheduler' - running locally.
+  NOT STARTED.
+  Currently in standby mode.
+  Number of jobs executed: 0
+  Using thread pool 'org.quartz.simpl.SimpleThreadPool' - with 10 threads.
+  Using job-store 'org.springframework.scheduling.quartz.LocalDataSourceJobStore' - which supports persistence. and is not clustered.
+
+2020-05-02 08:47:15.930 [main] INFO  org.quartz.impl.StdSchedulerFactory - Quartz scheduler 'scheduler' initialized from an externally provided properties instance.
+2020-05-02 08:47:15.934 [main] INFO  org.quartz.impl.StdSchedulerFactory - Quartz scheduler version: 2.3.2
+2020-05-02 08:47:15.937 [main] INFO  org.quartz.core.QuartzScheduler - JobFactory set to: org.springframework.scheduling.quartz.SpringBeanJobFactory@677ce519
+2020-05-02 08:47:16.706 [main] INFO  o.s.ldap.core.support.AbstractContextSource - Property 'userDn' not set - anonymous context will be used for read-write operations
+2020-05-02 08:47:17.267 [main] INFO  s.d.s.w.PropertySourcedRequestMappingHandlerMapping - Mapped URL path [/v2/api-docs] onto method [springfox.documentation.swagger2.web.Swagger2Controller#getDocumentation(String, HttpServletRequest)]
+2020-05-02 08:47:17.518 [main] INFO  o.s.scheduling.concurrent.ThreadPoolTaskExecutor - Initializing ExecutorService 'applicationTaskExecutor'
+2020-05-02 08:47:17.888 [main] INFO  s.d.s.web.plugins.DocumentationPluginsBootstrapper - Context refreshed
+2020-05-02 08:47:17.922 [main] INFO  s.d.s.web.plugins.DocumentationPluginsBootstrapper - Found 1 custom documentation plugin(s)
+2020-05-02 08:47:17.971 [main] INFO  s.d.spring.web.scanners.ApiListingReferenceScanner - Scanning for api listing references
+2020-05-02 08:47:18.167 [main] INFO  s.d.s.w.r.operation.CachingOperationNameGenerator - Generating unique operation named: deleteUsingDELETE_1
+2020-05-02 08:47:18.178 [main] INFO  s.d.s.w.r.operation.CachingOperationNameGenerator - Generating unique operation named: insertUsingPUT_1
+2020-05-02 08:47:18.182 [main] INFO  s.d.s.w.r.operation.CachingOperationNameGenerator - Generating unique operation named: selectUsingGET_1
+2020-05-02 08:47:18.186 [main] INFO  s.d.s.w.r.operation.CachingOperationNameGenerator - Generating unique operation named: updateUsingPOST_1
+2020-05-02 08:47:18.218 [main] WARN  s.d.s.w.readers.parameter.ParameterDataTypeReader - Trying to infer dataType java.util.List<java.lang.String>
+2020-05-02 08:47:18.243 [main] INFO  s.d.s.w.r.operation.CachingOperationNameGenerator - Generating unique operation named: deleteUsingDELETE_2
+2020-05-02 08:47:18.253 [main] INFO  s.d.s.w.r.operation.CachingOperationNameGenerator - Generating unique operation named: insertUsingPUT_2
+2020-05-02 08:47:18.289 [main] INFO  o.s.scheduling.quartz.SchedulerFactoryBean - Starting Quartz Scheduler now
+2020-05-02 08:47:18.299 [main] INFO  o.s.scheduling.quartz.LocalDataSourceJobStore - Freed 0 triggers from 'acquired' / 'blocked' state.
+2020-05-02 08:47:18.303 [main] INFO  o.s.scheduling.quartz.LocalDataSourceJobStore - Recovering 0 jobs that were in-progress at the time of the last shut-down.
+2020-05-02 08:47:18.304 [main] INFO  o.s.scheduling.quartz.LocalDataSourceJobStore - Recovery complete.
+2020-05-02 08:47:18.305 [main] INFO  o.s.scheduling.quartz.LocalDataSourceJobStore - Removed 0 'complete' triggers.
+2020-05-02 08:47:18.307 [main] INFO  o.s.scheduling.quartz.LocalDataSourceJobStore - Removed 0 stale fired job entries.
+2020-05-02 08:47:18.309 [main] INFO  org.quartz.core.QuartzScheduler - Scheduler scheduler_$_NON_CLUSTERED started.
+2020-05-02 08:47:18.321 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8060"]
+2020-05-02 08:47:18.354 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat started on port(s): 8060 (http) with context path ''
+2020-05-02 08:47:18.359 [main] INFO  com.delta.kylintask.KylinTaskApplication - Started KylinTaskApplication in 8.385 seconds (JVM running for 11.163)
+2020-05-02 08:50:12.496 [http-nio-8060-exec-2] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2020-05-02 08:50:12.498 [http-nio-8060-exec-2] INFO  org.springframework.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2020-05-02 08:50:12.514 [http-nio-8060-exec-2] INFO  org.springframework.web.servlet.DispatcherServlet - Completed initialization in 14 ms
+2020-05-02 08:50:13.553 [http-nio-8060-exec-2] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - Expected URL scheme 'http' or 'https' but was 'null', {}
+2020-05-02 21:28:55.963 [http-nio-8060-exec-3] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - Expected URL scheme 'http' or 'https' but was 'null', {}
+2020-05-02 21:29:57.081 [http-nio-8060-exec-7] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - Expected URL scheme 'http' or 'https' but was 'null', {}
+2020-05-02 21:30:00.355 [http-nio-8060-exec-6] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - Expected URL scheme 'http' or 'https' but was 'null', {}
+2020-05-02 21:30:25.929 [http-nio-8060-exec-9] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - Expected URL scheme 'http' or 'https' but was 'null', {}
+2020-05-02 21:46:41.254 [http-nio-8060-exec-2] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - Expected URL scheme 'http' or 'https' but was 'null', {}
+2020-05-02 21:47:34.382 [http-nio-8060-exec-1] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - Expected URL scheme 'http' or 'https' but was 'null', {}

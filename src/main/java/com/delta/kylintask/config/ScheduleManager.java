@@ -1,21 +1,28 @@
 package com.delta.kylintask.config;
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.delta.kylintask.commons.Constants;
 import com.delta.kylintask.commons.ServerResponse;
 import com.delta.kylintask.dto.TargetDataDto;
 import com.delta.kylintask.dto.TaskDto;
 import com.delta.kylintask.entity.Cube;
+import com.delta.kylintask.entity.Kylin;
 import com.delta.kylintask.entity.Segment;
+import com.delta.kylintask.mapper.KylinMapper;
 import com.delta.kylintask.quartz.*;
+import com.delta.kylintask.service.KylinService;
 import lombok.extern.slf4j.Slf4j;
+import org.mapstruct.AfterMapping;
 import org.quartz.*;
 import org.quartz.impl.matchers.GroupMatcher;
+import org.quartz.impl.matchers.KeyMatcher;
 import org.quartz.listeners.JobListenerSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.beans.BeanMap;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.util.*;
@@ -25,6 +32,25 @@ import java.util.*;
 public class ScheduleManager {
     @Autowired
     private Scheduler scheduler;
+    @Autowired
+    private KylinMapper kylinMapper;
+
+    @PostConstruct
+    public void addListener() throws SchedulerException {
+        //todo KylinService获取全部
+        List<Kylin> kylinList = kylinMapper.selectList(new EntityWrapper<Kylin>().isNotNull("id"));
+        for (Kylin kylin : kylinList) {
+            scheduler.getListenerManager().addJobListener(new BuildJobListener(),
+                    GroupMatcher.jobGroupEquals(kylin.getId() + Constants.BUILD));
+            scheduler.getListenerManager().addJobListener(new BuildJobListener(),
+                    GroupMatcher.jobGroupEquals(kylin.getId() + Constants.REFRESH));
+            scheduler.getListenerManager().addJobListener(new MonitorJobListener(),
+                    GroupMatcher.jobGroupEquals(kylin.getId() + Constants.MONITOR));
+            scheduler.getListenerManager().addJobListener(new ResumeJobListener(),
+                    GroupMatcher.jobGroupEquals(kylin.getId() + Constants.RESUME));
+        }
+
+    }
 
     public List<TaskDto> getJobs(String kylinId) {
         List<TaskDto> taskDtos = new ArrayList<>();
@@ -37,6 +63,7 @@ public class ScheduleManager {
                         CronTrigger trigger = (CronTrigger) scheduler.getTriggersOfJob(jobKey).get(0);
                         Date nextFireTime = trigger.getNextFireTime();
                         taskDto.setTaskName(jobDetail.getKey().getName());
+                        taskDto.setGroupName(jobKey.getGroup());
                         taskDto.setKylinid(kylinId);
                         taskDto.setStartAt(trigger.getStartTime());
                         taskDto.setEndAt(trigger.getEndTime());
@@ -55,7 +82,6 @@ public class ScheduleManager {
     }
 
     private String getCubeJobName(TargetDataDto targetDataDto){
-        System.out.println(targetDataDto.getSegment());
         Cube cube = JSON.parseObject(targetDataDto.getCube(), Cube.class);
         Segment segment = JSON.parseObject(targetDataDto.getSegment(), Segment.class);
         return String.format("%s_%s_%s", targetDataDto.getAction(), cube.getName(), segment.getName());
@@ -96,6 +122,7 @@ public class ScheduleManager {
     public TaskDto addJob(TaskDto taskDto) {
         try {
             TargetDataDto targetDataDto = JSON.parseObject(taskDto.getTargetData(), TargetDataDto.class);
+            String group = String.format("%s_%s", taskDto.getKylinid(), targetDataDto.getAction());
             Map<String, Object> jobInfo = getJobInfo(targetDataDto.getAction());
             Method method = this.getClass().getDeclaredMethod((String) jobInfo.get("jobName"), TargetDataDto.class);
             method.setAccessible(true);
@@ -103,9 +130,9 @@ public class ScheduleManager {
             JobDetail jobDetail = JobBuilder.newJob((Class<? extends Job>) jobInfo.get("clazz"))
                     .usingJobData(new JobDataMap(BeanMap.create(taskDto)))
                     .withDescription(taskDto.getDescription())
-                    .withIdentity(jobName, taskDto.getKylinid()).build();
+                    .withIdentity(jobName, group).build();
             TriggerBuilder<Trigger> triggerBuilder = TriggerBuilder.newTrigger();
-            triggerBuilder.withIdentity(jobName, taskDto.getKylinid());
+            triggerBuilder.withIdentity(jobName, group);
             if (taskDto.isLimit()) {
                 triggerBuilder.startAt(taskDto.getStartAt()).endAt(taskDto.getEndAt());
             } else {
@@ -122,8 +149,6 @@ public class ScheduleManager {
             taskDto.setNextFireTime(new Timestamp(trigger.getNextFireTime().getTime()));
             Trigger.TriggerState triggerState = scheduler.getTriggerState(trigger.getKey());
             taskDto.setStatus(triggerState.name());
-            JobListener listener = (JobListener)jobInfo.get("listener");
-            scheduler.getListenerManager().addJobListener(listener, GroupMatcher.jobGroupEquals(taskDto.getKylinid()));
             log.info("add job {}.", JSON.toJSONString(taskDto));
             return taskDto;
         } catch (Exception e) {
@@ -160,7 +185,7 @@ public class ScheduleManager {
 
     public TaskDto pauseJob(TaskDto taskDto){
         try {
-            JobKey jobKey = JobKey.jobKey(taskDto.getTaskName(), taskDto.getKylinid());
+            JobKey jobKey = JobKey.jobKey(taskDto.getTaskName(), taskDto.getGroupName());
             JobDetail jobDetail = scheduler.getJobDetail(jobKey);
             if (jobDetail == null) {
                 return null;
@@ -176,7 +201,7 @@ public class ScheduleManager {
 
     public TaskDto resumeJob(TaskDto taskDto){
         try {
-            JobKey jobKey = JobKey.jobKey(taskDto.getTaskName(), taskDto.getKylinid());
+            JobKey jobKey = JobKey.jobKey(taskDto.getTaskName(), taskDto.getGroupName());
             JobDetail jobDetail = scheduler.getJobDetail(jobKey);
             if (jobDetail == null) {
                 return null;
@@ -214,7 +239,7 @@ public class ScheduleManager {
 
     public TaskDto removeJob(TaskDto taskDto) {
         try {
-            TriggerKey triggerKey = TriggerKey.triggerKey(taskDto.getTaskName(), taskDto.getKylinid());
+            TriggerKey triggerKey = TriggerKey.triggerKey(taskDto.getTaskName(), taskDto.getGroupName());
             scheduler.pauseTrigger(triggerKey);
             scheduler.unscheduleJob(triggerKey);
             scheduler.deleteJob(JobKey.jobKey(taskDto.getTaskName(), taskDto.getKylinid()));

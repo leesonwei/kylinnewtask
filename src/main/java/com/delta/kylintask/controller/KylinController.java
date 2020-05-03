@@ -26,12 +26,12 @@ public class KylinController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public ServerResponse<Integer> delete(@PathVariable Integer id) {
+    public ServerResponse<String> delete(@PathVariable String id) {
         return kylinService.deleteById(id);
     }
 
     @GetMapping("/select/{id}")
-    public ServerResponse<Kylin> select(@PathVariable Integer id) {
+    public ServerResponse<Kylin> select(@PathVariable String id) {
         Kylin kylin = new Kylin();
         kylin.setId(id);
         return kylinService.selectById(id);
