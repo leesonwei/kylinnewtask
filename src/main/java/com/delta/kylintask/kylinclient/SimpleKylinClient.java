@@ -37,7 +37,6 @@ public class SimpleKylinClient implements KylinClient {
     private final static String resume="jobs/{job_uuid}/resume";
 
     private Kylin kylin;
-    private Headers headers;
     private OkHttpClient okHttpClient;
 
     @Override

@@ -1,0 +1,21 @@
+2020-05-04 09:02:48.649 [http-nio-8060-exec-10] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - Expected URL scheme 'http' or 'https' but was 'null', {}
+2020-05-04 13:33:01.863 [http-nio-8060-exec-7] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - Expected URL scheme 'http' or 'https' but was 'null', {}
+2020-05-04 19:06:24.641 [http-nio-8060-exec-4] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - Expected URL scheme 'http' or 'https' but was 'null', {}
+2020-05-04 19:07:56.133 [http-nio-8060-exec-3] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - Expected URL scheme 'http' or 'https' but was 'null', {}
+2020-05-04 19:09:07.339 [http-nio-8060-exec-2] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - Expected URL scheme 'http' or 'https' but was 'null', {}
+2020-05-04 19:14:06.383 [http-nio-8060-exec-1] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - Expected URL scheme 'http' or 'https' but was 'null', {}
+2020-05-04 19:15:31.779 [http-nio-8060-exec-3] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - Expected URL scheme 'http' or 'https' but was 'null', {}
+2020-05-04 19:19:04.225 [http-nio-8060-exec-1] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - null, {}
+2020-05-04 19:21:51.457 [http-nio-8060-exec-2] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - null, {}
+2020-05-04 19:24:28.834 [http-nio-8060-exec-3] ERROR com.delta.kylintask.kylinclient.SimpleKylinClient - timeout
+2020-05-04 19:24:28.841 [http-nio-8060-exec-3] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - null, {}
+2020-05-04 19:24:35.222 [http-nio-8060-exec-4] ERROR com.delta.kylintask.controller.ExceptionController - Method:POST | Path:/kylinweb/connect | Message:Required request body is missing: public com.delta.kylintask.commons.ServerResponse<java.lang.String> com.delta.kylintask.controller.KylinWebController.connect(com.delta.kylintask.entity.Kylin)
+2020-05-04 19:28:55.940 [http-nio-8060-exec-1] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - null, {}
+2020-05-04 19:33:45.694 [http-nio-8060-exec-9] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - null, {}
+2020-05-04 19:43:56.532 [http-nio-8060-exec-10] ERROR com.delta.kylintask.kylinclient.SimpleKylinClient - timeout
+2020-05-04 19:43:56.534 [http-nio-8060-exec-10] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - null, {}
+2020-05-04 19:45:24.962 [http-nio-8060-exec-1] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - null, {}
+2020-05-04 19:49:06.581 [http-nio-8060-exec-2] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - null, {}
+2020-05-04 19:49:52.234 [http-nio-8060-exec-3] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - null, {}
+2020-05-04 19:50:04.966 [http-nio-8060-exec-4] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - null, {}
+2020-05-04 19:52:13.459 [http-nio-8060-exec-9] ERROR c.delta.kylintask.service.impl.KylinWebServiceImpl - null, {}
